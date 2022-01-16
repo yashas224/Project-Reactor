@@ -2,6 +2,7 @@ package com.learnreactiveprogramming.service;
 
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
+import reactor.util.function.Tuple4;
 
 import java.util.Arrays;
 import java.util.List;
@@ -123,4 +124,78 @@ public class FluxAndMonoGeneratorServiceTest {
                 .verifyComplete();
 
     }
+
+    @Test
+    void explore_concat() {
+        var concatedFlux = fluxAndMonoSchedulersService.explore_concat();
+        StepVerifier.create(concatedFlux)
+                .expectNext("A", "B", "C", "D", "E", "F")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_concatwith() {
+        var concatedFlux = fluxAndMonoSchedulersService.explore_concatwith();
+        StepVerifier.create(concatedFlux)
+                .expectNext("A", "D", "E", "F")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_merge() {
+        var mergedFlux = fluxAndMonoSchedulersService.explore_merge();
+        StepVerifier.create(mergedFlux)
+                .expectNext("A", "D", "B", "E", "C", "F")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_mergewith() {
+        var mergedFlux = fluxAndMonoSchedulersService.explore_mergewith();
+        StepVerifier.create(mergedFlux)
+                .expectNext("A", "D", "E", "F")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_merge_sequestial() {
+        var mergedFlux = fluxAndMonoSchedulersService.explore_merge_sequestial();
+        StepVerifier.create(mergedFlux)
+                .expectNext("A", "B", "C", "D", "E", "F")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_zip() {
+        var zippedFlux = fluxAndMonoSchedulersService.explore_zip();
+        StepVerifier.create(zippedFlux)
+                .expectNext("AD", "BE", "CF")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_zip_1() {
+        var tupelFlux = fluxAndMonoSchedulersService.explore_zip_1();
+        StepVerifier.create(tupelFlux)
+                .expectNext("AD14", "BE25", "CF36")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_zipwith() {
+        var zipedFlux = fluxAndMonoSchedulersService.explore_zipwith();
+        StepVerifier.create(zipedFlux)
+                .expectNext("AD", "BE", "CF")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_zipwith_mono() {
+        var monoZipped= fluxAndMonoSchedulersService.explore_zipwith_mono();
+        StepVerifier.create(monoZipped)
+                .expectNext("AD")
+                .verifyComplete();
+    }
+
 }
+
