@@ -6,6 +6,7 @@ import reactor.test.StepVerifier;
 import java.util.Arrays;
 import java.util.List;
 
+
 public class FluxAndMonoGeneratorServiceTest {
     FluxAndMonoSchedulersService fluxAndMonoSchedulersService = new FluxAndMonoSchedulersService();
 
@@ -27,7 +28,7 @@ public class FluxAndMonoGeneratorServiceTest {
     void nameMono() {
         var nameMono = fluxAndMonoSchedulersService.nameMono();
         StepVerifier.create(nameMono)
-                .expectNext("alex")
+                .expectNext("yashas")
                 .verifyComplete();
     }
 
@@ -96,5 +97,30 @@ public class FluxAndMonoGeneratorServiceTest {
         StepVerifier.create(mono)
                 .expectNext("y", "a", "s", "h", "a", "s")
                 .verifyComplete();
+    }
+
+    @Test
+    void namesFlux_transform() {
+        var flux = fluxAndMonoSchedulersService.namesFlux_transform(3);
+        StepVerifier.create(flux)
+                .expectNext("ALEX", "CHLOE")
+                .verifyComplete();
+    }
+
+    @Test
+    void namesFlux_transform_1() {
+        var flux = fluxAndMonoSchedulersService.namesFlux_transform(6);
+        StepVerifier.create(flux)
+                .expectNext("default")
+                .verifyComplete();
+    }
+
+    @Test
+    void namesFlux_transform_switchifempty() {
+        var flux = fluxAndMonoSchedulersService.namesFlux_transform_switchifempty(8);
+        StepVerifier.create(flux)
+                .expectNext("x", "x", "x")
+                .verifyComplete();
+
     }
 }

@@ -6,7 +6,9 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
+import java.util.function.Function;
 
 import static com.learnreactiveprogramming.util.CommonUtil.delay;
 
@@ -90,10 +92,19 @@ public class FluxAndMonoSchedulersService {
     }
 
     public Flux<String> namesFlux_transform(int strLength) {
+        Function<Flux<String>, Flux<String>> function = name -> name.map(n -> n.toUpperCase(Locale.ROOT)).filter(s -> s.length() > strLength);
+
         return Flux.fromIterable(namesList)
-                .transform()
-                .filter(s -> s.length() > strLength)
-                .flatMap(s -> splitStringToFlux(s)).log();
+                .transform(function)
+                .defaultIfEmpty("default").log();
+    }
+
+    public Flux<String> namesFlux_transform_switchifempty(int strLength) {
+        Function<Flux<String>, Flux<String>> function = name -> name.map(n -> n.toUpperCase(Locale.ROOT)).filter(s -> s.length() > strLength);
+        return Flux.fromIterable(namesList)
+                .transform(function)
+                .switchIfEmpty(Flux.fromIterable(Arrays.asList("x", "x", "x")))
+                .defaultIfEmpty("default").log();
     }
 
     public static void main(String[] args) {
