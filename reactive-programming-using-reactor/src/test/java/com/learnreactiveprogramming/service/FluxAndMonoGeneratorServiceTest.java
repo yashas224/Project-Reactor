@@ -1,5 +1,6 @@
 package com.learnreactiveprogramming.service;
 
+import com.learnreactiveprogramming.exception.ReactorException;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import reactor.util.function.Tuple4;
@@ -191,11 +192,109 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void explore_zipwith_mono() {
-        var monoZipped= fluxAndMonoSchedulersService.explore_zipwith_mono();
+        var monoZipped = fluxAndMonoSchedulersService.explore_zipwith_mono();
         StepVerifier.create(monoZipped)
                 .expectNext("AD")
                 .verifyComplete();
     }
 
+    @Test
+    void namesFlux_do_on_callback() {
+        var flux = fluxAndMonoSchedulersService.namesFlux_do_on_callback();
+        StepVerifier.create(flux)
+                .expectNextCount(3)
+                .verifyComplete();
+    }
+
+    @Test
+    void exceptionFlux() {
+        var flux = fluxAndMonoSchedulersService.exceptionFlux();
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectError(RuntimeException.class)
+                .verify();
+    }
+
+    //  second way to test exceptions
+    @Test
+    void exceptionFlux_1() {
+        var flux = fluxAndMonoSchedulersService.exceptionFlux();
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectError()
+                .verify();
+    }
+
+    //  third way to test exceptions
+    @Test
+    void exceptionFlux_2() {
+        var flux = fluxAndMonoSchedulersService.exceptionFlux();
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectErrorMessage("EXCEPTION OCCURED")
+                .verify();
+    }
+
+    @Test
+    void explore_onErrorReturn() {
+        var flux = fluxAndMonoSchedulersService.explore_onErrorReturn();
+
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectNext("E")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_onErrorResume() {
+        var flux= fluxAndMonoSchedulersService.explore_onErrorResume(new IllegalStateException("Not a valid state"));
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectNext("X", "Y", "Z")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_onErrorResume_1() {
+        var flux= fluxAndMonoSchedulersService.explore_onErrorResume(new RuntimeException("Not a valid state"));
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectError(RuntimeException.class)
+                .verify();
+    }
+
+    @Test
+    void explore_onErrorContinue() {
+        var flux= fluxAndMonoSchedulersService.explore_onErrorContinue();
+        StepVerifier.create(flux)
+                .expectNext("A","C","D")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_onErrorMap() {
+        var flux=fluxAndMonoSchedulersService.explore_onErrorMap();
+        StepVerifier.create(flux)
+                .expectNext("A")
+                .expectError(ReactorException.class)
+                .verify();
+    }
+
+    @Test
+    void explore_doOnError() {
+        var flux=fluxAndMonoSchedulersService.explore_doOnError();
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectError(RuntimeException.class)
+                .verify();
+    }
+
+    @Test
+    void explore_Mono_OnErrorReturn() {
+        var mono= fluxAndMonoSchedulersService.explore_Mono_OnErrorReturn();
+        StepVerifier.create(mono)
+                .expectNext("D")
+                .verifyComplete();
+    }
 }
 

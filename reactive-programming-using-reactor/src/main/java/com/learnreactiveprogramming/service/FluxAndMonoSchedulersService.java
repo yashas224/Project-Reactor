@@ -1,8 +1,9 @@
 package com.learnreactiveprogramming.service;
 
+import com.learnreactiveprogramming.exception.ReactorException;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple4;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import java.util.function.Function;
 
 import static com.learnreactiveprogramming.util.CommonUtil.delay;
 
+@Slf4j
 public class FluxAndMonoSchedulersService {
 
     static List<String> namesList = List.of("alex", "ben", "chloe");
@@ -171,6 +173,102 @@ public class FluxAndMonoSchedulersService {
         var mon02 = Mono.just("D").delayElement(Duration.ofMillis(160));
 
         return mono1.zipWith(mon02, (a, b) -> a + b).log();
+    }
+
+    public Flux<String> namesFlux_do_on_callback() {
+        return Flux.fromIterable(namesList)
+                .map(String::toUpperCase)
+                .doOnNext(data -> System.out.println("emitted data is" + data))
+                .doOnSubscribe(subscription -> System.out.println("subscription is " + subscription))
+                .doOnComplete(() -> System.out.println("complete signal emitted "))
+                .doFinally(signalType -> System.out.println("inside finally " + signalType))
+                .log();
+    }
+
+    public Flux<String> exceptionFlux() {
+        return Flux.just("A", "B", "C")
+                .concatWith(Flux.error(new RuntimeException("EXCEPTION OCCURED")))
+                .concatWith(Flux.just("D")).log();
+    }
+
+
+    // "D" is not emitted as the subscription between publisher and subscrber ends as soon as an exception is thrown
+    public Flux<String> explore_onErrorReturn() {
+        return Flux.just("A", "B", "C")
+                .concatWith(Flux.error(new IllegalStateException("EXCEPTION OCCURED")))
+                .concatWith(Flux.just("D"))
+                .onErrorReturn("E")
+                .log();
+    }
+
+    public Flux<String> explore_onErrorResume(Exception e) {
+        var recoveryFlux = Flux.just("X", "Y", "Z");
+        return Flux.just("A", "B", "C")
+                .concatWith(Flux.error(e))
+                .concatWith(Flux.just("D"))
+                .onErrorResume(exception -> {
+                    log.error("Exception is", exception);
+                    if (exception instanceof IllegalStateException) {
+                        return recoveryFlux;
+                    } else {
+                        return Flux.error(exception);
+                    }
+                })
+                .log();
+    }
+
+    public Flux<String> explore_onErrorContinue() {
+        var recoveryFlux = Flux.just("X", "Y", "Z");
+        return Flux.just("A", "B", "C")
+                .map(s -> {
+                    if (s.equals("B")) {
+                        throw new RuntimeException("exception during processing");
+                    }
+                    return s;
+                })
+                .concatWith(Flux.just("D"))
+                .onErrorContinue((ex, val) -> {
+                    log.info("error is" + ex);
+                    log.info("value that caused error is " + val);
+                })
+                .log();
+    }
+
+    public Flux<String> explore_onErrorMap() {
+        var recoveryFlux = Flux.just("X", "Y", "Z");
+        return Flux.just("A", "B", "C")
+                .map(s -> {
+                    if (s.equals("B")) {
+                        throw new RuntimeException("exception during processing");
+                    }
+                    return s;
+                })
+                .concatWith(Flux.just("D"))
+                .onErrorMap(ex -> {
+                    log.error("Exception is -" + ex);
+                    return new ReactorException(ex, ex.getMessage());
+                })
+                .log();
+    }
+
+
+    public Flux<String> explore_doOnError() {
+        return Flux.just("A", "B", "C")
+                .concatWith(Flux.error(new RuntimeException("error occured")))
+                .concatWith(Flux.just("D"))
+                .doOnError(ex -> {
+                    log.error("Exception is- " + ex);
+                })
+                .log();
+    }
+
+    public Mono<Object> explore_Mono_OnErrorReturn() {
+        return Mono.just("A")
+                .map(val -> {
+                    throw new RuntimeException("exception occured");
+                })
+                .onErrorReturn("D")
+                .log();
     }
 
     public static void main(String[] args) {

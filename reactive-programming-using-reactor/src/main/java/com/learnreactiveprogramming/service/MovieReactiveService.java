@@ -16,7 +16,7 @@ public class MovieReactiveService {
         this.movieInfoService = movieInfoService;
         this.reviewService = reviewService;
     }
-
+    
     public Flux<Movie> getAllMovies() {
         var movieInfoFLux = movieInfoService.retrieveMoviesFlux();
         return movieInfoFLux.flatMap(movieInfo -> {
