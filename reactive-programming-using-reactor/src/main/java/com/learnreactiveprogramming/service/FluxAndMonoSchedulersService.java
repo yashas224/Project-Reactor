@@ -53,6 +53,7 @@ public class FluxAndMonoSchedulersService {
     // return individual Characters of each name
     public Flux<String> namesFlux_flatMap(int strLength) {
         return Flux.fromIterable(namesList)
+                .map(str -> str.toUpperCase(Locale.ROOT))
                 .filter(s -> s.length() > strLength)
                 .flatMap(s -> splitStringToFlux(s)).log();
     }
@@ -63,6 +64,7 @@ public class FluxAndMonoSchedulersService {
 
     public Flux<String> namesFlux_flatMapAsync(int strLength) {
         return Flux.fromIterable(namesList)
+                .map(str -> str.toUpperCase(Locale.ROOT))
                 .filter(s -> s.length() > strLength)
                 .flatMap(s -> splitStringToFluxWithDelay(s)).log();
     }

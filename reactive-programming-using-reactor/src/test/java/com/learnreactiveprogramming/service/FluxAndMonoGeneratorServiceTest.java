@@ -64,7 +64,7 @@ public class FluxAndMonoGeneratorServiceTest {
         var namesFlux = fluxAndMonoSchedulersService.namesFlux_flatMap(3);
 
         StepVerifier.create(namesFlux)
-                .expectNext("a", "l", "e", "x", "c", "h", "l", "o", "e")
+                .expectNext("A", "L", "E", "X", "C", "H", "L", "O", "E")
                 .verifyComplete();
     }
 
