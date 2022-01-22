@@ -4,6 +4,8 @@ import com.learnreactiveprogramming.exception.ReactorException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -18,6 +20,7 @@ import static com.learnreactiveprogramming.util.CommonUtil.delay;
 public class FluxAndMonoSchedulersService {
 
     static List<String> namesList = List.of("alex", "ben", "chloe");
+    static List<String> namesList1 = List.of("adam", "jill", "jack");
 
     private String upperCase(String name) {
         delay(1000);
@@ -284,5 +287,40 @@ public class FluxAndMonoSchedulersService {
                 .subscribe(System.out::println);
     }
 
+
+    //  expolre publishOn
+    public Flux<String> explore_publishOn() {
+        var namesFlux = Flux.fromIterable(namesList)
+                .publishOn(Schedulers.boundedElastic())
+                .map(s -> {
+                    log.info("2-name is " + s);
+                    return s;
+                })
+                .map(this::upperCase).log();
+        var namesFlux1 = Flux.fromIterable(namesList1)
+                .publishOn(Schedulers.parallel())
+                .map(this::upperCase).log();
+
+        return namesFlux.mergeWith(namesFlux1);
+    }
+
+
+    public Flux<String> explore_subscribeOn() {
+        var namesFlux = flux1(namesList)
+                .subscribeOn(Schedulers.boundedElastic())
+                .log();
+        var namesFlux1 = flux1(namesList1)
+                .subscribeOn(Schedulers.boundedElastic())
+                .map(s -> {
+                    log.info("name is " + s);
+                    return s;
+                }).log();
+        return namesFlux.mergeWith(namesFlux1);
+    }
+
+    private Flux<String> flux1(List<String> list) {
+        return Flux.fromIterable(list)
+                .map(this::upperCase);
+    }
 
 }

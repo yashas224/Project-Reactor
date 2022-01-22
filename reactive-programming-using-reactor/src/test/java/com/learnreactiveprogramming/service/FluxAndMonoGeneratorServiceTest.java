@@ -247,7 +247,7 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void explore_onErrorResume() {
-        var flux= fluxAndMonoSchedulersService.explore_onErrorResume(new IllegalStateException("Not a valid state"));
+        var flux = fluxAndMonoSchedulersService.explore_onErrorResume(new IllegalStateException("Not a valid state"));
         StepVerifier.create(flux)
                 .expectNext("A", "B", "C")
                 .expectNext("X", "Y", "Z")
@@ -256,7 +256,7 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void explore_onErrorResume_1() {
-        var flux= fluxAndMonoSchedulersService.explore_onErrorResume(new RuntimeException("Not a valid state"));
+        var flux = fluxAndMonoSchedulersService.explore_onErrorResume(new RuntimeException("Not a valid state"));
         StepVerifier.create(flux)
                 .expectNext("A", "B", "C")
                 .expectError(RuntimeException.class)
@@ -265,15 +265,15 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void explore_onErrorContinue() {
-        var flux= fluxAndMonoSchedulersService.explore_onErrorContinue();
+        var flux = fluxAndMonoSchedulersService.explore_onErrorContinue();
         StepVerifier.create(flux)
-                .expectNext("A","C","D")
+                .expectNext("A", "C", "D")
                 .verifyComplete();
     }
 
     @Test
     void explore_onErrorMap() {
-        var flux=fluxAndMonoSchedulersService.explore_onErrorMap();
+        var flux = fluxAndMonoSchedulersService.explore_onErrorMap();
         StepVerifier.create(flux)
                 .expectNext("A")
                 .expectError(ReactorException.class)
@@ -282,7 +282,7 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void explore_doOnError() {
-        var flux=fluxAndMonoSchedulersService.explore_doOnError();
+        var flux = fluxAndMonoSchedulersService.explore_doOnError();
         StepVerifier.create(flux)
                 .expectNext("A", "B", "C")
                 .expectError(RuntimeException.class)
@@ -291,9 +291,27 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void explore_Mono_OnErrorReturn() {
-        var mono= fluxAndMonoSchedulersService.explore_Mono_OnErrorReturn();
+        var mono = fluxAndMonoSchedulersService.explore_Mono_OnErrorReturn();
         StepVerifier.create(mono)
                 .expectNext("D")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_publishOn() {
+        var flux = fluxAndMonoSchedulersService.explore_publishOn();
+
+        StepVerifier.create(flux)
+                .expectNextCount(6)
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_subscribeOn() {
+        var flux= fluxAndMonoSchedulersService.explore_subscribeOn();
+
+        StepVerifier.create(flux)
+                .expectNextCount(6)
                 .verifyComplete();
     }
 }
