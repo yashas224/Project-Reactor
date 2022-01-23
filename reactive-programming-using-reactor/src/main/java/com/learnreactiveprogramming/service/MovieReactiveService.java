@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -19,10 +20,17 @@ public class MovieReactiveService {
 
     private MovieInfoService movieInfoService;
     private ReviewService reviewService;
+    private RevenueService revenueService;
 
     public MovieReactiveService(MovieInfoService movieInfoService, ReviewService reviewService) {
         this.movieInfoService = movieInfoService;
         this.reviewService = reviewService;
+    }
+
+    public MovieReactiveService(MovieInfoService movieInfoService, ReviewService reviewService, RevenueService revenueService) {
+        this.movieInfoService = movieInfoService;
+        this.reviewService = reviewService;
+        this.revenueService = revenueService;
     }
 
     public Flux<Movie> getAllMovies() {
@@ -99,6 +107,7 @@ public class MovieReactiveService {
                 }).retryWhen(getRetrySpecs())
                 .repeat(n);
     }
+
     public Mono<Movie> getMovieById(long movieId) {
         var monoMovieInfo = movieInfoService.retrieveMovieInfoMonoUsingId(movieId);
         var reviews = reviewService.retrieveReviewsFlux(movieId).collectList();
@@ -112,5 +121,18 @@ public class MovieReactiveService {
             return monoReview.map(reviews -> new Movie(movieInfo, reviews));
         });
 
+    }
+
+    public Mono<Movie> getMovieByIdWithRevenue(long movieId) {
+        var monoMovieInfo = movieInfoService.retrieveMovieInfoMonoUsingId(movieId);
+        var reviews = reviewService.retrieveReviewsFlux(movieId).collectList()  ;
+        var revenue = revenueService.getRevenue(movieId);
+
+        var revenueMono = Mono.fromCallable(() -> revenueService.getRevenue(movieId))
+                .subscribeOn(Schedulers.boundedElastic());
+        return Mono.zip(monoMovieInfo, reviews, (info, rev) -> new Movie(info, rev)).zipWith(revenueMono, (movie, revenue1) -> {
+            movie.setRevenue(revenue);
+            return movie;
+        });
     }
 }

@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class MovieReactiveServiceTest {
     private MovieInfoService movieInfoService = new MovieInfoService();
     private ReviewService reviewService = new ReviewService();
-
-    private MovieReactiveService movieReactiveService = new MovieReactiveService(movieInfoService, reviewService);
+    private RevenueService revenueService = new RevenueService();
+    private MovieReactiveService movieReactiveService = new MovieReactiveService(movieInfoService, reviewService, revenueService);
 
 
     @Test
@@ -41,6 +41,20 @@ class MovieReactiveServiceTest {
                     assertEquals(45, movie.getMovie().getMovieInfoId());
                     assertEquals("Batman Begins", movie.getMovie().getName());
                     assertEquals(2, movie.getReviewList().size());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void getMovieByIdWithRevenue() {
+        var movieMono = movieReactiveService.getMovieByIdWithRevenue(45l).log();
+
+        StepVerifier.create(movieMono)
+                .assertNext(movie -> {
+                    assertEquals(45, movie.getMovie().getMovieInfoId());
+                    assertEquals("Batman Begins", movie.getMovie().getName());
+                    assertEquals(2, movie.getReviewList().size());
+                    assertNotNull(movie.getRevenue());
                 })
                 .verifyComplete();
     }
