@@ -308,10 +308,52 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void explore_subscribeOn() {
-        var flux= fluxAndMonoSchedulersService.explore_subscribeOn();
+        var flux = fluxAndMonoSchedulersService.explore_subscribeOn();
 
         StepVerifier.create(flux)
                 .expectNextCount(6)
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_parallel() {
+        var flux = fluxAndMonoSchedulersService.explore_parallel();
+        StepVerifier.create(flux)
+                .expectNextCount(3)
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_parallel_usingFlatmap() {
+        var flux = fluxAndMonoSchedulersService.explore_parallel_usingFlatmap();
+        StepVerifier.create(flux)
+                .expectNextCount(3)
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_parallel_usingFlatmap_1() {
+        var flux = fluxAndMonoSchedulersService.explore_parallel_usingFlatmap_1();
+        StepVerifier.create(flux)
+                .expectNextCount(6)
+                .verifyComplete();
+
+    }
+
+
+    @Test
+    void explore_merge2() {
+        var flux = fluxAndMonoSchedulersService.explore_merge_without_thread_switching();
+        StepVerifier.create(flux)
+                .expectNextCount(6)
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_parallel_usingFlatmapSequential() {
+        var flux = fluxAndMonoSchedulersService.explore_parallel_usingFlatmapSequential();
+        StepVerifier.create(flux)
+                .expectNext("ALEX", "BEN", "CHLOE")
                 .verifyComplete();
     }
 }
