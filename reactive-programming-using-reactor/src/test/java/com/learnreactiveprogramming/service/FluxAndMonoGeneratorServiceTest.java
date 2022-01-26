@@ -3,8 +3,10 @@ package com.learnreactiveprogramming.service;
 import com.learnreactiveprogramming.exception.ReactorException;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
+import reactor.test.scheduler.VirtualTimeScheduler;
 import reactor.util.function.Tuple4;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -81,6 +83,16 @@ public class FluxAndMonoGeneratorServiceTest {
     void namesFlux_concatMap() {
         var flux = fluxAndMonoSchedulersService.namesFlux_concatMap(3);
         StepVerifier.create(flux)
+                .expectNext("a", "l", "e", "x", "c", "h", "l", "o", "e")
+                .verifyComplete();
+    }
+
+    @Test
+    void namesFlux_concatMap_virtualTimer() {
+        VirtualTimeScheduler.getOrSet();
+        var flux = fluxAndMonoSchedulersService.namesFlux_concatMap(3);
+        StepVerifier.withVirtualTime(() -> flux)
+                .thenAwait(Duration.ofSeconds(9))
                 .expectNext("a", "l", "e", "x", "c", "h", "l", "o", "e")
                 .verifyComplete();
     }
