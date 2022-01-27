@@ -2,10 +2,7 @@ package com.learnreactiveprogramming.service;
 
 import com.learnreactiveprogramming.exception.ReactorException;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.ParallelFlux;
+import reactor.core.publisher.*;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
@@ -241,16 +238,30 @@ public class FluxAndMonoSchedulersService {
                 .log();
     }
 
-    public Flux<String> explore_onErrorMap() {
+    public Flux<String> explore_onErrorMap(Exception e) {
         var recoveryFlux = Flux.just("X", "Y", "Z");
+//        return Flux.just("A", "B", "C")
+//                .map(s -> {
+//                    if (s.equals("B")) {
+//                        throw new RuntimeException("exception during processing");
+//                    }
+//                    return s;
+//                })
+//                .concatWith(Flux.just("D"))
         return Flux.just("A", "B", "C")
-                .map(s -> {
-                    if (s.equals("B")) {
-                        throw new RuntimeException("exception during processing");
-                    }
-                    return s;
+                .concatWith(Flux.error(e))
+                .onErrorMap(ex -> {
+                    log.error("Exception is -" + ex);
+                    return new ReactorException(ex, ex.getMessage());
                 })
-                .concatWith(Flux.just("D"))
+                .log();
+    }
+
+    public Flux<String> explore_onErrorMap_onOperatorDebug(Exception e) {
+
+        return Flux.just("A", "B", "C")
+                .concatWith(Flux.error(e))
+//                .checkpoint("Here is the Exception thrown")
                 .onErrorMap(ex -> {
                     log.error("Exception is -" + ex);
                     return new ReactorException(ex, ex.getMessage());

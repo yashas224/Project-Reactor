@@ -2,8 +2,10 @@ package com.learnreactiveprogramming.service;
 
 import com.learnreactiveprogramming.exception.ReactorException;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Hooks;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
+import reactor.tools.agent.ReactorDebugAgent;
 import reactor.util.function.Tuple4;
 
 import java.time.Duration;
@@ -285,9 +287,9 @@ public class FluxAndMonoGeneratorServiceTest {
 
     @Test
     void explore_onErrorMap() {
-        var flux = fluxAndMonoSchedulersService.explore_onErrorMap();
+        var flux = fluxAndMonoSchedulersService.explore_onErrorMap(new RuntimeException("Not a valid state"));
         StepVerifier.create(flux)
-                .expectNext("A")
+                .expectNext("A", "B", "C")
                 .expectError(ReactorException.class)
                 .verify();
     }
@@ -399,6 +401,31 @@ public class FluxAndMonoGeneratorServiceTest {
         StepVerifier.create(flux)
                 .expectNext("ALEX", "CHLOE")
                 .verifyComplete();
+    }
+
+    @Test
+    void explore_onErrorMap_onOperatorDebug() {
+//        Hooks.onOperatorDebug();
+        var flux = fluxAndMonoSchedulersService.explore_onErrorMap_onOperatorDebug(new RuntimeException("Not a valid state"));
+
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectError(ReactorException.class)
+                .verify();
+    }
+
+
+    @Test
+    void explore_onErrorMap_ReactorDebugAgent() {
+        ReactorDebugAgent.init();
+        ReactorDebugAgent.processExistingClasses();
+//        Hooks.onOperatorDebug();
+        var flux = fluxAndMonoSchedulersService.explore_onErrorMap_onOperatorDebug(new RuntimeException("Not a valid state"));
+
+        StepVerifier.create(flux)
+                .expectNext("A", "B", "C")
+                .expectError(ReactorException.class)
+                .verify();
     }
 }
 
