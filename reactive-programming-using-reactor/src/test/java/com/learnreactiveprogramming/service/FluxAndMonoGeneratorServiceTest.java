@@ -368,5 +368,37 @@ public class FluxAndMonoGeneratorServiceTest {
                 .expectNext("ALEX", "BEN", "CHLOE")
                 .verifyComplete();
     }
+
+    @Test
+    void explore_generate() {
+        var flux = fluxAndMonoSchedulersService.explore_generate().log();
+        StepVerifier.create(flux)
+                .expectNext(2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
+                .verifyComplete();
+    }
+
+    @Test
+    void explorre_create() {
+        var flux = fluxAndMonoSchedulersService.explorre_create().log();
+        StepVerifier.create(flux)
+                .expectNext("alex", "alex", "ben", "ben", "chloe", "chloe", "alex", "ben", "chloe")
+                .verifyComplete();
+    }
+
+    @Test
+    void explorre_create_mono() {
+        var mono = fluxAndMonoSchedulersService.explorre_create_mono().log();
+        StepVerifier.create(mono)
+                .expectNext("yashas")
+                .verifyComplete();
+    }
+
+    @Test
+    void explore_handle() {
+        var flux = fluxAndMonoSchedulersService.explore_handle().log();
+        StepVerifier.create(flux)
+                .expectNext("ALEX", "CHLOE")
+                .verifyComplete();
+    }
 }
 

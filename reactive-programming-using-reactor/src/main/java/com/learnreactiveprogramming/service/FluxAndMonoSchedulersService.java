@@ -3,6 +3,7 @@ package com.learnreactiveprogramming.service;
 import com.learnreactiveprogramming.exception.ReactorException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ParallelFlux;
 import reactor.core.scheduler.Schedulers;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import static com.learnreactiveprogramming.util.CommonUtil.delay;
@@ -371,5 +373,74 @@ public class FluxAndMonoSchedulersService {
                         .subscribeOn(Schedulers.parallel()))
                 .log();
     }
+
+    // ways to  programatically creating Flux
+
+    public Flux<Integer> explore_generate() {
+        return Flux.generate(
+                () -> 1,
+                (state, sink) -> {
+                    sink.next(state * 2);
+                    if (state == 10) {
+                        sink.complete();
+                    }
+                    return state + 1;
+                });
+    }
+
+
+    private static List<String> getNames() {
+        delay(1000);
+        return namesList;
+    }
+
+    public Flux<String> explorre_create() {
+        return Flux.create((fluxSink -> {
+//            getNames()
+//                    .forEach(name -> {
+//                        fluxSink.next(name);
+//                    });
+            CompletableFuture
+                    .supplyAsync(() -> getNames())
+                    .thenAccept(name -> {
+                        name.forEach(n -> {
+                            fluxSink.next(n);
+                            fluxSink.next(n);
+                        });
+                    })
+                    .thenRun(() -> sendEvents(fluxSink));
+
+        }));
+    }
+
+
+    public void sendEvents(FluxSink<String> fluxSink) {
+
+        CompletableFuture
+                .supplyAsync(() -> getNames())
+                .thenAccept(name -> {
+                    name.forEach(n -> {
+                        fluxSink.next(n);
+                    });
+                })
+                .thenRun(() -> fluxSink.complete());
+
+    }
+
+    public Mono<String> explorre_create_mono() {
+        return Mono.create((sink -> {
+            sink.success("yashas");
+        }));
+
+    }
+
+    public Flux<String> explore_handle() {
+        return Flux.fromIterable(namesList).handle((val, sink) -> {
+            if (val.length() > 3) {
+                sink.next(val.toUpperCase(Locale.ROOT));
+            }
+        });
+    }
+
 
 }
